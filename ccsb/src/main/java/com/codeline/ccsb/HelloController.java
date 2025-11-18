@@ -12,7 +12,7 @@ public class HelloController {
     private int idCounter = 1;
 
     @PostMapping("create")
-    public String createStudent(@RequestParam String name) {
+    public String createCourses(@RequestParam String name) {
         courses.put(idCounter, name);
         return "Course created with ID: " + idCounter++;
     }

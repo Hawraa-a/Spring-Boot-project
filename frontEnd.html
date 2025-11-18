@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Course Management</title>
+  <style>
+    /* General */
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #e3f2fd, #fff3e0);
+      margin: 0;
+      padding: 40px;
+    }
+    h1 {
+      text-align: center;
+      color: #0d47a1;
+      margin-bottom: 40px;
+      font-size: 2.5rem;
+    }
+
+    /* Section styling */
+    .section {
+      max-width: 900px;
+      margin: 20px auto;
+      background: #ffffff;
+      padding: 30px 25px;
+      border-radius: 20px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+    .section h2 {
+      color: #0d47a1;
+      margin-bottom: 15px;
+      font-size: 1.5rem;
+    }
+
+    /* Input styling */
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 8px 0 16px;
+      border-radius: 8px;
+      border: 1px solid #ccc;
+      font-size: 1rem;
+      transition: 0.3s;
+    }
+    input:focus {
+      border-color: #1976d2;
+      outline: none;
+      box-shadow: 0 0 5px rgba(25, 118, 210, 0.3);
+    }
+
+    /* Buttons */
+    button {
+      background: #1976d2;
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 5px 5px 15px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: bold;
+      transition: 0.3s;
+    }
+    button:hover {
+      background: #0d47a1;
+    }
+
+    /* Table styling */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+    }
+    th, td {
+      padding: 14px 10px;
+      text-align: left;
+      border-bottom: 1px solid #ddd;
+    }
+    th {
+      background: #1976d2;
+      color: white;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+    }
+    td {
+      font-size: 0.95rem;
+    }
+    tr:hover {
+      background: #f1f1f1;
+    }
+
+    /* Status coloring */
+    .status-active {
+      color: green;
+      font-weight: bold;
+    }
+    .status-inactive {
+      color: red;
+      font-weight: bold;
+    }
+
+    /* Message styling */
+    p {
+      font-weight: bold;
+      margin-top: -10px;
+      margin-bottom: 10px;
+      color: #0d47a1;
+    }
+
+  </style>
+</head>
+<body>
+  <h1>Course Management System</h1>
+
+  <!-- Show / Hide All Courses Section -->
+  <div class="section">
+    <h2>All Courses</h2>
+    <button onclick="toggleAllCourses()">Show / Hide All Courses</button>
+    <button onclick="getAllCourses()">Refresh</button>
+
+    <table id="allCoursesTable" style="display:none;">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Category</th>
+          <th>Duration</th>
+          <th>Created Date</th>
+          <th>Updated Date</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody id="courseTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Create Course -->
+  <div class="section">
+    <h2>Create Course</h2>
+    <input id="cName" placeholder="Name" />
+    <input id="cCategory" placeholder="Category" />
+    <input id="cDuration" type="number" placeholder="Duration (min)" />
+    <button onclick="createCourse()">Create</button>
+    <p id="createMsg"></p>
+  </div>
+
+  <!-- Get by ID -->
+  <div class="section">
+    <h2>Get Course By ID</h2>
+    <input id="gId" type="number" placeholder="Course ID" />
+    <button onclick="getById()">Search</button>
+    <p id="getByIdResult"></p>
+  </div>
+
+  <!-- Update Course -->
+  <div class="section">
+    <h2>Update Course</h2>
+    <input id="uId" type="number" placeholder="ID" />
+    <input id="uName" placeholder="Name" />
+    <input id="uCategory" placeholder="Category" />
+    <input id="uDuration" type="number" placeholder="Duration (min)" />
+    <button onclick="updateCourse()">Update</button>
+    <p id="updateMsg"></p>
+  </div>
+
+  <!-- Delete Course -->
+  <div class="section">
+    <h2>Delete Course</h2>
+    <input id="dId" type="number" placeholder="ID" />
+    <button onclick="deleteCourse()">Delete</button>
+    <p id="deleteMsg"></p>
+  </div>
+
+  <script>
+    const BASE_URL = "http://localhost:8080/";
+
+    function toggleAllCourses() {
+      const table = document.getElementById("allCoursesTable");
+      table.style.display = table.style.display === "none" ? "table" : "none";
+    }
+
+    async function getAllCourses() {
+      const res = await fetch(BASE_URL + "getAll");
+      const data = await res.json();
+      const body = document.getElementById("courseTableBody");
+      body.innerHTML = "";
+
+      data.forEach(c => {
+        body.innerHTML += `
+          <tr>
+            <td>${c.id}</td>
+            <td>${c.name}</td>
+            <td>${c.category}</td>
+            <td>${c.duration} min</td>
+            <td>${c.createdDate}</td>
+            <td>${c.updatedDate || "—"}</td>
+            <td class="${c.isActive ? 'status-active' : 'status-inactive'}">
+              ${c.isActive ? "Active" : "Inactive"}
+            </td>
+          </tr>`;
+      });
+    }
+
+    async function createCourse() {
+      const obj = {
+        name: document.getElementById("cName").value,
+        category: document.getElementById("cCategory").value,
+        duration: document.getElementById("cDuration").value
+      };
+
+      const res = await fetch(BASE_URL + "create", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj)
+      });
+
+      document.getElementById("createMsg").innerText = await res.text();
+      getAllCourses();
+    }
+
+    async function getById() {
+      const id = document.getElementById("gId").value;
+      const res = await fetch(BASE_URL + "getById?id=" + id);
+      const c = await res.json();
+
+      document.getElementById("getByIdResult").innerText = c.id
+        ? `ID: ${c.id}, Name: ${c.name}, Category: ${c.category}, Duration: ${c.duration} min`
+        : "Course not found";
+    }
+
+    async function updateCourse() {
+      const obj = {
+        id: document.getElementById("uId").value,
+        name: document.getElementById("uName").value,
+        category: document.getElementById("uCategory").value,
+        duration: document.getElementById("uDuration").value
+      };
+
+      const res = await fetch(BASE_URL + "update", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(obj)
+      });
+
+      document.getElementById("updateMsg").innerText = await res.text();
+      getAllCourses();
+    }
+
+    async function deleteCourse() {
+      const id = document.getElementById("dId").value;
+      const res = await fetch(BASE_URL + "delete/" + id, { method: "DELETE" });
+      document.getElementById("deleteMsg").innerText = await res.text();
+      getAllCourses();
+    }
+
+    getAllCourses();
+  </script>
+</body>
+</html>

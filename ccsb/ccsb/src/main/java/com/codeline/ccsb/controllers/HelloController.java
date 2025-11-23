@@ -45,7 +45,7 @@ public class HelloController {
     @PutMapping("update")
     public String updateCourse(@RequestBody Course updateObjFromUser) {
         if (updateObjFromUser != null && updateObjFromUser.getId() != null) {
-            Course existingCourseToUpdate = findStudentById(updateObjFromUser.getId());
+            Course existingCourseToUpdate = findCourseById(updateObjFromUser.getId());
             courseList.remove(existingCourseToUpdate);
 
             existingCourseToUpdate.setName(updateObjFromUser.getName());
@@ -60,7 +60,7 @@ public class HelloController {
 
     @DeleteMapping("delete/{id}")
     public String deleteCourse(@PathVariable int id) {
-        Course existingCourseToUpdate = findStudentById(id);
+        Course existingCourseToUpdate = findCourseById(id);
         if(existingCourseToUpdate.getId() > 0){
             courseList.remove(existingCourseToUpdate);
             existingCourseToUpdate.setIsActive(false);
@@ -70,7 +70,7 @@ public class HelloController {
         return "Course not found";
     }
 
-    public Course findStudentById(int id) {
+    public Course findCourseById(int id) {
         for (Course course : courseList) {
             if (course.getId() == id && course.getIsActive()) {
                 return course;
